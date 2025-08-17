@@ -1,0 +1,49 @@
+### Environments / Secrets
+.env
+.env.*
+!.env.example
+.envrc
+
+### Python virtualenvs
+.venv/
+venv/
+env/
+
+### Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+pip-wheel-metadata/
+.eggs/
+*.egg-info/
+
+### Test / Coverage / Type check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+### IDE / Editor
+/.vscode/
+.idea/
+
+### OS / Misc
+.DS_Store
+.python-version
+*.log
+logs/
+
+### Project data/artifacts
+data/
+monitor_output/
+
+### Databases
+*.sqlite
+*.sqlite3
+*.db
