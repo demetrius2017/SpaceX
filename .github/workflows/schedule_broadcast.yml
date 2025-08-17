@@ -1,0 +1,38 @@
+name: Daily Broadcast
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Authenticate Heroku CLI
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+        run: |
+          cat > ~/.netrc <<EOF
+          machine api.heroku.com
+            login $HEROKU_EMAIL
+            password $HEROKU_API_KEY
+          machine git.heroku.com
+            login $HEROKU_EMAIL
+            password $HEROKU_API_KEY
+          EOF
+          chmod 600 ~/.netrc
+          heroku auth:whoami || true
+
+      - name: Trigger daily broadcast on Heroku dyno
+        env:
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          heroku run -a "$HEROKU_APP_NAME" -- python telegram_bot.py --daily
