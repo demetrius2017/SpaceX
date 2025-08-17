@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>SpaceX Risk/Growth Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #0b0f17; color: #e6edf3;}
+    header { padding: 20px; background: #111827; border-bottom: 1px solid #1f2937;}
+    h1 { margin: 0; font-size: 22px; }
+    .meta { color: #9ca3af; font-size: 12px; margin-top: 6px;}
+    .container { padding: 18px; }
+    .score-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 18px;}
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 16px; }
+    .big-number { font-size: 34px; font-weight: 700; }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; margin-right: 6px;}
+    .pill.risk { background: #3f1d1d; color: #f87171; border: 1px solid #7f1d1d;}
+    .pill.growth { background: #102a22; color: #34d399; border: 1px solid #065f46;}
+    .pill.neutral { background: #1f2937; color: #9ca3af; border: 1px solid #374151;}
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px; border-bottom: 1px solid #1f2937; vertical-align: top; }
+    th { text-align: left; color: #9ca3af; font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .sev-pos { color: #34d399; }
+    .sev-neg { color: #f87171; }
+    .sev-zero { color: #9ca3af; }
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .recommend { font-size: 24px; font-weight: 700; }
+    .footer { color: #6b7280; font-size: 12px; margin-top: 14px;}
+    .tag { font-size: 11px; color: #9ca3af; background: #1f2937; border: 1px solid #374151; padding: 2px 6px; border-radius: 6px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>SpaceX Risk/Growth Dashboard</h1>
+  <div class="meta">
+    Обновлено: {{ generated_at }} • Окно: {{ lookback_days }} дн. • Источники: {{ source_count }}
+  </div>
+</header>
+<div class="container">
+  <div class="score-box">
+    <div class="card">
+      <div>Индекс (итого)</div>
+      <div class="big-number">{{ total_score }}</div>
+      <div>Риск: <span class="pill risk">{{ risk_score }}</span> Рост: <span class="pill growth">{{ growth_score }}</span></div>
+    </div>
+    <div class="card">
+      <div>Рекомендация</div>
+      <div class="recommend">{{ recommendation.action }}</div>
+      <div class="meta">{{ recommendation.reason }}</div>
+    </div>
+    <div class="card">
+      <div>Чеклист</div>
+      <div>{{ checklist_summary }}</div>
+      <div class="meta">Ручные галочки дают доп. вес к индексу.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="margin:0;font-size:18px;">События</h2>
+      <div class="meta">Всего: {{ events|length }}</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>Заголовок</th>
+          <th>Категория</th>
+          <th>Тэг</th>
+          <th>Вес</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr>
+          <td>{{ e.published[:10] if e.published else "" }}</td>
+          <td><a href="{{ e.url }}" target="_blank">{{ e.title }}</a></td>
+          <td>{{ e.category }}</td>
+          <td><span class="tag">{{ e.tag }}</span></td>
+          <td class="{{ 'sev-pos' if e.weight>0 else ('sev-neg' if e.weight<0 else 'sev-zero') }}">{{ '%+d'|format(e.weight) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    Генератор отчёта: spacex_monitor/monitor.py • Правила и источники настраиваются в config.yml • Чеклист — в checklist.yaml
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,253 @@
+# Основные настройки
+lookback_days: 45
+output_dir: monitor_output
+database_path: data/articles.jsonl
+usaspending_enabled: true
+usaspending_lookback_days: 120
+action_thresholds:
+  strong_buy: 25
+  buy: 15
+  hold: 5
+  neutral: 0
+  trim: -10
+  reduce: -20
+
+# Источники (RSS/HTML/GNews RSS). Можно включать/выключать по необходимости.
+sources:
+  - name: NASA News Releases
+    type: rss
+    url: https://www.nasa.gov/news-release/feed/
+    category: NASA/General
+
+  - name: NASA Artemis
+    type: rss
+    url: https://www.nasa.gov/missions/artemis/feed/
+    category: NASA/HLS
+
+  - name: DoD Contract Announcements
+    type: rss
+    # Если фид изменится/не работает, скрипт попробует fallback-скрейпинг со страницы contracts.
+    url: https://www.defense.gov/News/Contracts/rss/
+    category: DoD/Contracts
+    enabled: false
+
+  - name: Space Systems Command News
+    type: rss
+    url: https://www.ssc.spaceforce.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=12553&output=0
+    category: USSF/SSC
+
+  - name: FAA Newsroom
+    type: rss
+    url: https://www.faa.gov/rss.xml
+    category: FAA/Regulatory
+
+  - name: FCC Daily Digest
+    type: rss
+    url: https://www.fcc.gov/edocs/daily-digest/latest/rss
+    category: FCC/Regulatory
+    enabled: false
+
+  - name: FCC Space Bureau Headlines
+    type: rss
+    url: https://www.fcc.gov/news-events/headlines/rss
+    category: FCC/Regulatory
+    enabled: false
+
+  - name: SpaceX Updates (HTML)
+    type: html
+    url: https://www.spacex.com/updates/
+    css_item: div.wysiwyg-article
+    css_title: h2
+    css_url_selector: a
+    css_url_attr: href
+    css_date: time
+    category: SpaceX/Updates
+    enabled: true
+
+  - name: SpaceX Launches (HTML)
+    type: html
+    url: https://www.spacex.com/launches/
+    css_item: li.launches__item
+    css_title: h3
+    css_url_selector: a
+    css_url_attr: href
+    css_date: time
+    category: SpaceX/Launches
+    enabled: true
+
+
+  - name: NASASpaceflight News
+    type: rss
+    url: https://www.nasaspaceflight.com/feed/
+    category: ThirdParty/NSF
+
+  - name: "Google News: SpaceX secondary/tender valuation"
+    type: rss
+    url: https://news.google.com/rss/search?q=spacex+%28tender+OR+share+sale+OR+secondary%29+valuation
+    category: Finance/Tender
+
+  - name: "Google News: Project Kuiper"
+    type: rss
+    url: https://news.google.com/rss/search?q=%22Project+Kuiper%22+satellites+service+launch
+    category: Competitors/Kuiper
+
+  - name: T-Mobile Newsroom (Starlink D2C)
+    type: rss
+    url: https://www.t-mobile.com/news/rss.xml
+    category: Starlink/D2C
+
+  - name: FCC Starlink Direct-To-Cell (keyword via Daily Digest/Headlines)
+    type: rss
+    url: https://www.fcc.gov/edocs/daily-digest/latest/rss
+    category: FCC/Regulatory
+    enabled: false
+
+  - name: FAA Starship Boca Chica (HTML)
+    type: html
+    url: https://www.faa.gov/space/stakeholder_engagement/spacex_starship
+    css_item: main
+    css_title: h1
+    css_url_selector: a
+    css_url_attr: href
+    css_date: time
+    category: FAA/Starship
+    enabled: true
+
+  - name: CA Coastal Commission docs (Vandenberg)
+    type: rss
+    url: https://documents.coastal.ca.gov/Recent-Items.rss
+    category: State/California
+    enabled: true
+
+# Ключевые правила обнаружения (по поиску в title/summary). Вес + => рост, вес - => риск.
+rules:
+  - name: FAA grounding / mishap / stop
+    patterns: ["grounding", "grounded", "incident", "stop order", "cease", "violation", "fine", "penalty"]
+    categories: ["FAA/Regulatory", "FAA/Starship", "SpaceX/Launches"]
+    weight: -30
+    tag: "Regulatory Risk"
+    impact: risk
+
+  - name: FAA license issued / FONSI / cadence increase
+    patterns: ["license", "FONSI", "Record of Decision", "cadence", "no significant impact"]
+    categories: ["FAA/Regulatory", "FAA/Starship"]
+    weight: 15
+    tag: "License Progress"
+    impact: growth
+
+  - name: Starship integrated flight success
+    patterns: ["integrated flight", "IF", "booster landing", "hot staging ring", "catch", "reentry success", "on target splashdown", "propellant transfer"]
+    categories: ["SpaceX/Launches", "ThirdParty/NSF", "SpaceX/Updates"]
+    weight: 12
+    tag: "Starship Milestone"
+    impact: growth
+
+  - name: Starship failure/explosion
+    patterns: ["explosion", "RUD", "lost vehicle", "disintegration", "failed", "anomaly"]
+    categories: ["SpaceX/Launches", "ThirdParty/NSF", "SpaceX/Updates"]
+    weight: -18
+    tag: "Starship Setback"
+    impact: risk
+
+  - name: NSSL Phase 3 / Lane awards
+    patterns: ["NSSL Phase 3", "Lane 1", "Lane 2", "task order", "USSF-", "SSC awards", "National Security Space Launch", "Space Force awards"]
+    categories: ["DoD/Contracts", "USSF/SSC"]
+    weight: 10
+    tag: "NSSL Award"
+    impact: growth
+
+  - name: Loss or deferral of NSSL/Lane
+    patterns: ["award to ULA", "award to Blue Origin", "deferred", "protest sustained", "GAO sustain", "cancelled mission", "no award"]
+    categories: ["DoD/Contracts", "USSF/SSC"]
+    weight: -12
+    tag: "NSSL Risk"
+    impact: risk
+
+  - name: Starshield contracts
+    patterns: ["Starshield", "PLEO", "COMSATCOM", "MILNET", "NRO", "classified", "secure satellite", "task order"]
+    categories: ["DoD/Contracts", "USSF/SSC"]
+    weight: 12
+    tag: "Starshield Revenue"
+    impact: growth
+
+  - name: Artemis HLS milestones
+    patterns: ["Artemis III", "HLS", "Human Landing System", "Option A", "Option B", "crew landing", "HLS milestone"]
+    categories: ["NASA/HLS"]
+    weight: 8
+    tag: "HLS Progress"
+    impact: growth
+
+  - name: Artemis delays
+    patterns: ["delay", "slip", "net", "no earlier than", "NET", "pushed to", "rescheduled"]
+    categories: ["NASA/HLS"]
+    weight: -10
+    tag: "HLS Delay"
+    impact: risk
+
+  - name: D2C / T-Mobile launch
+    patterns: ["Direct to Cell", "D2C", "T‑Satellite", "Starlink beta", "SCS", "higher power", "MMS", "data service", "FCC approval"]
+    categories: ["Starlink/D2C", "FCC/Regulatory"]
+    weight: 10
+    tag: "D2C Rollout"
+    impact: growth
+
+  - name: FCC/Regulatory challenges to D2C
+    patterns: ["objection", "interference", "petition to deny", "stay", "sue", "lawsuit"]
+    categories: ["FCC/Regulatory"]
+    weight: -10
+    tag: "D2C Regulatory Risk"
+    impact: risk
+
+  - name: California/Vandenberg restrictions
+    patterns: ["Coastal Commission", "Vandenberg", "sonic boom", "rejects", "permits", "vote against"]
+    categories: ["State/California"]
+    weight: -8
+    tag: "California Headwind"
+    impact: risk
+
+  - name: Competitor Kuiper major milestone
+    patterns: ["Project Kuiper", "service", "beta", "first customers", "over 100 satellites", "launch milestone"]
+    categories: ["Competitors/Kuiper"]
+    weight: -3
+    tag: "Kuiper Competitive"
+    impact: risk
+
+  - name: Tender valuation up
+    # Уточнение: требуем, чтобы в заголовке/тексте фигурировало SpaceX — комбинированные паттерны
+    patterns: [
+      "spacex valuation",
+      "spacex share sale",
+      "spacex tender offer",
+      "spacex secondary",
+      "spacex priced at",
+      "spacex $400 billion"
+    ]
+    categories: ["Finance/Tender"]
+    weight: 12
+    tag: "Tender Up"
+    impact: growth
+
+  - name: Tender valuation down / weak demand
+    patterns: ["cut price", "down from", "reduced", "weak demand"]
+    categories: ["Finance/Tender"]
+    weight: -15
+    tag: "Tender Down"
+    impact: risk
+
+  # Новое правило: одобрение/разрешение полётов/лицензий (перекрывает ложные минусы за "mishap investigation" в позитивном контексте)
+  - name: License Approval
+    patterns: ["approved", "approves", "authorizes", "authorization", "clearance", "clears", "green light"]
+    categories: ["FAA/Regulatory", "FAA/Starship", "SpaceX/Launches", "ThirdParty/NSF"]
+    weight: 15
+    tag: "License Approval"
+    impact: growth
+
+# Именованные "чекбоксы" для ручной отметки (доп. очки)
+manual_checklist:
+  # Примеры: true/false в файле checklist.yaml
+  starship_flight_success: {weight: 10, description: "Последний полет Starship прошел по плану (ключевые цели достигнуты)"}
+  starship_grounding: {weight: -20, description: "FAA приостановила полеты Starship"}
+  nssl_share_gain: {weight: 8, description: "Доля SpaceX в NSSL P3 выше ожиданий"}
+  kuiper_service_started: {weight: -8, description: "Kuiper запустил платный сервис в США/ЕС"}
+  d2c_commercial_launched: {weight: 10, description: "Коммерческий запуск Direct-to-Cell (T‑Mobile/T‑Satellite) состоялся"}
+  california_block_persists: {weight: -5, description: "CA Coastal Commission сохраняет блок по Vandenberg"}

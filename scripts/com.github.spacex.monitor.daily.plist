@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.github.spacex.monitor.daily</string>
+
+  <!-- Run at 09:00 local time daily; adjust StartCalendarInterval as needed -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <!-- Ensure job restarts on failure -->
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <false/>
+
+  <!-- Working directory -->
+  <key>WorkingDirectory</key>
+  <string>/Users/dmitrijnazarov/Downloads/spacex_monitor</string>
+
+  <!-- Environment variables; edit or use .env file in script -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- Uncomment and set if you don't use .env -->
+    <!-- <key>OPENAI_API_KEY</key><string>sk-...</string> -->
+    <!-- <key>TELEGRAM_BOT_TOKEN</key><string>...</string> -->
+    <!-- <key>TELEGRAM_CHAT_ID</key><string>...</string> -->
+    <!-- <key>DAYS</key><string>45</string> -->
+    <!-- <key>EXTRA_ARGS</key><string>--debug --gpt-max-items 40</string> -->
+  </dict>
+
+  <!-- Log output to files under monitor_output/logs/ -->
+  <key>StandardOutPath</key>
+  <string>/Users/dmitrijnazarov/Downloads/spacex_monitor/monitor_output/launchd_out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/dmitrijnazarov/Downloads/spacex_monitor/monitor_output/launchd_err.log</string>
+
+  <!-- Program to run -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>chmod +x scripts/run_monitor_daily.sh && scripts/run_monitor_daily.sh</string>
+  </array>
+</dict>
+</plist>

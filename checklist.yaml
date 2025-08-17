@@ -1,0 +1,7 @@
+# Отметь true/false по факту (приоритет над автосбором)
+starship_flight_success: false
+starship_grounding: false
+nssl_share_gain: false
+kuiper_service_started: false
+d2c_commercial_launched: false
+california_block_persists: false
